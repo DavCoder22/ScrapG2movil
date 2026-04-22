@@ -1,132 +1,125 @@
 # Instagram Scraper
 
-**Curso:** Dispositivos Móviles - Grupo 2
+**Proyecto académico - Dispositivos Móviles Grupo 2**
 
-Instagram profile scraper using Puppeteer with stealth features.
+Herramienta de scraping para perfiles públicos de Instagram usando Puppeteer con técnicas stealth.
 
-## Features
+## Características
 
-- Extract profile data (followers, following, posts count, bio, verification status)
-- Extract posts (likes, comments, timestamps, location)
-- Export to JSON and CSV
-- Stealth mode to avoid detection
-- Cookie-based authentication
-- Optional Tor proxy support
-- Configurable settings
+- Extracción de datos de perfiles (seguidores, posts, bio, verificación)
+- Extracción de posts (likes, comentarios, timestamps, ubicación)
+- Exportación a JSON y CSV
+- Modo stealth para evitar detección
+- Autenticación con cookies de sesión
+- Soporte opcional para Tor proxy
+- Configuración personalizable
 
-## Requirements
+## Requisitos
 
 - Node.js 18+
-- Docker (for Tor proxy - optional)
+- Docker (opcional para Tor)
 
-## Installation
+## Instalación
 
 ```bash
 npm install
 ```
 
-## Usage
+## Uso Rápido
+
+### 1. Guardar cookies de sesión (recomendado)
 
 ```bash
-# Basic usage
+npm run login
+# o
+login.bat
+```
+
+Ingresa tu usuario y contraseña de Instagram. Las cookies se guardan automáticamente.
+
+### 2. Scrapear un perfil
+
+```bash
 npm start natgeo
-
-# With specific username
-npm start instagram
+# o
+run.bat natgeo
 ```
 
-### Authentication (Required for Private Profiles)
-
-1. Open Instagram in your browser
-2. Login with your account
-3. Install a cookie extension (EditThisCookie for Chrome/Firefox)
-4. Export cookies to `data/cookies.json`
-
-**Cookie Format:**
-```json
-[
-  {
-    "name": "sessionid",
-    "value": "YOUR_SESSION_ID",
-    "domain": ".instagram.com",
-    "path": "/",
-    "secure": true,
-    "httpOnly": true,
-    "expires": -1
-  },
-  {
-    "name": "ds_user_id",
-    "value": "YOUR_USER_ID",
-    "domain": ".instagram.com", 
-    "path": "/",
-    "secure": true,
-    "httpOnly": true,
-    "expires": -1
-  }
-]
-```
-
-### Using Docker for Tor
+### 3. Con Tor Proxy (opcional)
 
 ```bash
-# Start Tor container
-docker run -d --name tor_proxy -p 9050:9050 --restart unless-stopped dperson/torproxy
+# Iniciar Tor primero
+docker run -d --name tor_proxy -p 9050:9050 dperson/torproxy
 
-# Enable Tor in config/src/config/index.js
+# Luego ejecutar
 npm run start:tor natgeo
+# o
+run-tor.bat natgeo
 ```
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
 instagram-scraper/
 ├── src/
-│   ├── index.js              # Main entry point
+│   ├── index.js           # Punto de entrada principal
+│   ├── login.js        # CLI para guardar cookies
 │   ├── config/
-│   │   └── index.js         # Configuration
+│   │   └── index.js  # Configuración
 │   └── services/
-│       ├── puppeteer.js    # Puppeteer setup
-│       ├── instagram.js   # Instagram scraper
-│       └── cookies.js    # Cookie manager
-├── data/
-│   ├── cookies.json       # Instagram session cookies
-│   └── *.json           # Extracted data
-├── screenshots/
-├── package.json
-└── README.md
+│       ├── puppeteer.js   # Setup de Puppeteer
+│       ├── instagram.js # Scraping de Instagram
+│       ├── cookies.js  # Gestor de cookies
+│       └── login.js   # Flujo de login
+├── data/              # Datos extraídos
+├── screenshots/       # Capturas
+├── run.bat          # Ejecutor rápido
+├── run-tor.bat    # Ejecutor con Tor
+├── login.bat      # Guardar cookies
+└── package.json
 ```
 
-## Configuration
+## Configuración
 
-Edit `src/config/index.js`:
+Edita `src/config/index.js`:
 
 ```javascript
 export default {
   instagram: {
     baseUrl: 'https://www.instagram.com',
-    timeout: 60000,        // Page load timeout
-    scrollDelay: 3000,    // Delay between scrolls
-    maxScrolls: 3          // Max scroll attempts
-  },
-  proxy: {
-    enabled: false,       // Enable Tor proxy
-    host: '127.0.0.1',
-    port: 9050,
-    type: 'socks5'
+    timeout: 60000,
+    scrollDelay: 3000,
+    maxScrolls: 3
   },
   browser: {
-    headless: false,     // Show browser
-    slowMo: 100         // Delay between actions
+    headless: false,
+    slowMo: 150,
+    viewport: { width: 1920, height: 1080 },
+    userAgent: 'Mozilla/5.0...'
   }
 };
 ```
 
-## Output
+## Cookies de Sesión
 
-Data saved to `data/`:
-- `{username}_data.json` - Full profile data
-- `{username}_posts.csv` - Posts in CSV
+Para perfil privados o evitar limitaciones:
 
-## License
+1. Ejecuta `login.bat`
+2. Ingresa tus credenciales
+3. Completa 2FA si es necesario
+4. Las cookies se guardan en `data/cookies.json`
+
+## Datos Extraídos
+
+Los datos se guardan en `data/`:
+
+- `{username}_data.json` - Perfil completo
+- `{username}_posts.csv` - Posts en CSV
+
+## Advertencia
+
+Este proyecto es para **fines educativos**. Respeta los Términos de Servicio de Instagram y úsalo responsablemente.
+
+## Licencia
 
 MIT

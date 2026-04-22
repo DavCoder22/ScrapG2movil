@@ -19,6 +19,11 @@ function ask(question) {
   return new Promise(resolve => rl.question(question, resolve));
 }
 
+function getUsername() {
+  const realArgs = process.argv.slice(2).filter(arg => !arg.startsWith('--'));
+  return realArgs[0] || null;
+}
+
 async function getBrowserArgs() {
   const useTor = process.argv.includes('--tor');
   
@@ -33,7 +38,6 @@ async function getBrowserArgs() {
     ];
   }
 
-  // TOR mode
   console.log('Using TOR proxy: socks5://127.0.0.1:9050');
   
   return [
@@ -43,22 +47,16 @@ async function getBrowserArgs() {
     '--disable-dev-shm-usage',
     '--disable-accelerated-2d-canvas',
     '--disable-gpu',
-    '--disable-blink-features=AutomationControlled',
-    '--disable-web-security',
-    '--allow-running-insecure-content',
-    '--ignore-certificate-errors'
+    '--disable-blink-features=AutomationControlled'
   ];
 }
 
-/**
- * Check if cookies are available and valid
- */
 async function checkSession() {
   if (!isLoggedIn()) {
     console.log('No valid session found');
     console.log('To login:');
     console.log('1. Open Instagram in browser');
-    console.log('2. Install cookie extension (EditThisCookie)');
+    console.log('2. Install cookie extension');
     console.log('3. Export cookies to data/cookies.json');
     console.log();
     
@@ -75,7 +73,6 @@ async function checkSession() {
   
   if (!validation.valid) {
     console.log('Issues:', validation.issues.join(', '));
-    
     const response = await ask('Continue anyway? (y/n): ');
     if (response.toLowerCase() !== 'y') {
       rl.close();
@@ -93,18 +90,15 @@ async function main() {
   console.log('================================================');
   console.log();
 
-  // Check session (optional - can press n to skip)
-  await checkSession();
-
-  // Get username - handle --tor flag
-  const useTor = process.argv.includes('--tor');
-  let username = null;
-  
-  if (useTor) {
-    username = process.argv[3]; // User is at position 3 if --tor is used
+  // Skip session check if --no-cookies
+  if (!process.argv.includes('--no-cookies')) {
+    await checkSession();
   } else {
-    username = process.argv[2];
+    console.log('Skipping session check (--no-cookies)');
   }
+
+  // Get username
+  let username = getUsername();
   
   if (!username) {
     username = await ask('Instagram user (without @): ');
@@ -123,12 +117,12 @@ async function main() {
   console.log();
   console.log('Starting browser...');
 
-  const args = await getBrowserArgs();
+  const browserArgs = await getBrowserArgs();
 
   const browser = await puppeteer.launch({
     headless: config.browser.headless,
     slowMo: config.browser.slowMo,
-    args: args
+    args: browserArgs
   });
 
   const page = await browser.newPage();
@@ -136,14 +130,11 @@ async function main() {
   await page.setViewport(config.browser.viewport);
   await page.setUserAgent(config.browser.userAgent);
 
-  // Apply cookies if available
   if (isLoggedIn()) {
     console.log('Applying cookies...');
     await applyCookies(page);
-    console.log('Cookies applied');
   }
 
-  // Anti-detection
   await page.evaluateOnNewDocument(() => {
     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
     Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
@@ -152,25 +143,19 @@ async function main() {
   });
 
   try {
-    // Extract data
     console.log(`Scraping @${username}...`);
     const data = await extractProfile(page, username);
 
     if (data.error) {
       console.log(`Error: ${data.error} - ${data.message}`);
-      
       if (data.error === 'LOGIN_REQUIRED') {
-        console.log();
-        console.log('Instagram requires login');
         console.log('Please update cookies in data/cookies.json');
       }
-      
       await browser.close();
       rl.close();
       return;
     }
 
-    // Show results
     console.log();
     console.log('================================================');
     console.log('  RESULTS');
@@ -184,12 +169,10 @@ async function main() {
     console.log(`  Extracted: ${data.posts.length}`);
     console.log('================================================');
 
-    // Save JSON
     const jsonFile = `./data/${username}_data.json`;
     fs.writeFileSync(jsonFile, JSON.stringify(data, null, 2));
     console.log(`\nSaved: ${jsonFile}`);
 
-    // Save CSV if posts exist
     if (data.posts.length > 0) {
       const csvFile = `./data/${username}_posts.csv`;
       
