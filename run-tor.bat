@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 title INSTAGRAM SCRAPER - TOR MODE
 
 echo.
@@ -16,7 +16,6 @@ echo [1] Verificando Node.js...
 node --version >nul 2>&1
 if errorlevel 1 (
     echo     ERROR: Node.js no esta instalado
-    echo     Descarga desde: https://nodejs.org/
     pause
     exit /b 1
 )
@@ -24,14 +23,14 @@ echo     OK
 echo.
 
 REM ================================================
-REM Paso 2: Verificar dependencias instaladas
+REM Paso 2: Verificar dependencias
 REM ================================================
 echo [2] Verificando dependencias...
 if not exist "node_modules" (
-    echo     Instalando dependencias...
+    echo     Instalando...
     call npm install
     if errorlevel 1 (
-        echo     ERROR al instalar
+        echo     ERROR
         pause
         exit /b 1
     )
@@ -46,15 +45,15 @@ echo [3] Verificando TOR...
 
 set TOR_READY=0
 
-REM Verificar si el puerto 9050 acepta conexiones
+REM Verificar puerto 9050
 netstat -ano | findstr ":9050" | findstr "LISTENING" >nul
 if not errorlevel 1 (
     set TOR_READY=1
     echo     OK: TOR detectando
-    goto :check_user
+    goto :get_user
 )
 
-REM Intentar iniciar contenedor Docker
+REM Intentar Docker
 docker info >nul 2>&1
 if not errorlevel 1 (
     echo     Iniciando TOR container...
@@ -68,66 +67,51 @@ if not errorlevel 1 (
     if not errorlevel 1 (
         set TOR_READY=1
         echo     OK: TOR iniciado
-        goto :check_user
+        goto :get_user
     )
 )
 
-echo     ERROR: TOR no esta disponible
+echo     ERROR: TOR no disponible
 echo.
-echo     Para usar TOR:
-echo     1. Instala Docker: https://docker.com/desktop
-echo     2. Ejecuta: docker run -d -p 9050:9050 dperson/torproxy
+echo     Instala Docker y ejecuta:
+echo     docker run -d -p 9050:9050 dperson/torproxy
 echo.
 pause
 exit /b 1
 
-:check_user
+:get_user
 
 REM ================================================
 REM Paso 4: Obtener usuario
 REM ================================================
 echo [4] Configurando...
 
-set TARGET_USER=%1
+set "TARGET_USER=%~1"
 
-if defined TARGET_USER (
-    if "!TARGET_USER!"=="--tor" (
-        set TARGET_USER=
-    )
+if "%TARGET_USER%"=="" (
+    set /p "TARGET_USER=     Usuario de Instagram (sin @): "
 )
 
-if not defined TARGET_USER (
-    if not "%2"=="" (
-        set TARGET_USER=%2
-    )
-)
-
-if not defined TARGET_USER (
-    echo.
-    echo     Ingresa el usuario de Instagram (sin @):
-    set /p TARGET_USER=     User: 
-)
-
-if not defined TARGET_USER (
-    echo     ERROR: Necesitas especificar un usuario
+if "%TARGET_USER%"=="" (
+    echo     ERROR: Necesitas un usuario
     pause
     exit /b 1
 )
 
-REM Limpiar @ si lo incluyen
-set TARGET_USER=!TARGET_USER:@=!
+set "TARGET_USER=%TARGET_USER:@=%"
 
 echo.
-echo     Usuario: @!TARGET_USER!
+echo     Objetivo: @%TARGET_USER%
+echo     Modo: TOR
 echo.
 
 REM ================================================
 REM Paso 5: Ejecutar scraper
 REM ================================================
-echo [5] Ejecutando scraper...
+echo [5] Ejecutando...
 echo.
 
-node src/index.js --tor !TARGET_USER!
+node src\index.js --tor %TARGET_USER%
 
 echo.
 echo ================================================
