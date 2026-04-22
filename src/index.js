@@ -22,7 +22,7 @@ function ask(question) {
 async function getBrowserArgs() {
   const useTor = process.argv.includes('--tor');
   
-  if (!useTor || !config.proxy.enabled) {
+  if (!useTor) {
     return [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -33,14 +33,20 @@ async function getBrowserArgs() {
     ];
   }
 
+  // TOR mode
+  console.log('Using TOR proxy: socks5://127.0.0.1:9050');
+  
   return [
-    `--proxy-server=${config.proxy.type}://${config.proxy.host}:${config.proxy.port}`,
+    '--proxy-server=socks5://127.0.0.1:9050',
     '--no-sandbox',
     '--disable-setuid-sandbox',
     '--disable-dev-shm-usage',
     '--disable-accelerated-2d-canvas',
     '--disable-gpu',
-    '--disable-blink-features=AutomationControlled'
+    '--disable-blink-features=AutomationControlled',
+    '--disable-web-security',
+    '--allow-running-insecure-content',
+    '--ignore-certificate-errors'
   ];
 }
 
@@ -90,8 +96,15 @@ async function main() {
   // Check session (optional - can press n to skip)
   await checkSession();
 
-  // Get username
-  let username = process.argv[2];
+  // Get username - handle --tor flag
+  const useTor = process.argv.includes('--tor');
+  let username = null;
+  
+  if (useTor) {
+    username = process.argv[3]; // User is at position 3 if --tor is used
+  } else {
+    username = process.argv[2];
+  }
   
   if (!username) {
     username = await ask('Instagram user (without @): ');
