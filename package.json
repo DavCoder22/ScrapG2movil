@@ -1,0 +1,22 @@
+{
+  "name": "instagram-scraper",
+  "version": "1.0.0",
+  "description": "Instagram profile scraper using Puppeteer with stealth features",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:tor": "node src/index.js --tor",
+    "check:tor": "node src/utils/tor-check.js"
+  },
+  "keywords": ["instagram", "scraper", "puppeteer"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.0.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-extra-plugin-user-preferences": "^2.4.1",
+    "csv-writer": "^1.6.0"
+  }
+}
