@@ -13,14 +13,17 @@ jspm_packages/
 dist/
 build/
 
-# Instagram session cookies (private!)
+# Instagram session cookies (PRIVATE!)
 data/cookies.json
 data/cookies.json.*
+*.key
+secret*
 
 # Data outputs
 data/*.json
 data/*.csv
 !data/.gitkeep
+!data/*.example.json
 
 # Screenshots
 screenshots/*.png
