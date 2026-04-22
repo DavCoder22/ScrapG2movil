@@ -1,10 +1,12 @@
 /**
- * Login CLI - Save Instagram session cookies
+ * Instagram Login CLI
+ * Guardar cookies de sesion
  */
 
 import { loginWithCredentials, saveSessionCookies } from './services/login.js';
 import { loadCookies, saveCookies } from './services/cookies.js';
 import readline from 'readline';
+import fs from 'fs';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -22,56 +24,61 @@ async function main() {
   console.log('================================================');
   console.log();
 
-  // Check if already have cookies
-  const existingCookies = loadCookies();
-  
-  if (existingCookies.length > 0) {
-    console.log(`Found ${existingCookies.length} existing cookies`);
-    const response = await ask('Overwrite? (y/n): ');
-    if (response.toLowerCase() !== 'y') {
-      console.log('Keeping existing cookies');
+  // Check existing cookies
+  const existing = loadCookies();
+  if (existing.length > 0) {
+    console.log(`Found ${existing.length} cookies`);
+    const res = await ask('Overwrite? (y/n): ');
+    if (res.toLowerCase() !== 'y') {
+      console.log('Keeping existing');
       rl.close();
       return;
     }
   }
 
-  // Get credentials
-  console.log();
-  const username = await ask('Instagram username: ');
-  const password = await ask('Instagram password: ');
+  // Try to read credentials from temp file (set by run.bat)
+  let username = '';
+  let password = '';
   
+  const tempCreds = './data/temp_creds.json';
+  if (fs.existsSync(tempCreds)) {
+    try {
+      const creds = JSON.parse(fs.readFileSync(tempCreds, 'utf-8'));
+      username = creds.username;
+      password = creds.password;
+    } catch (e) {}
+  }
+
+  // If not from file, ask
+  if (!username) {
+    username = await ask('Username: ');
+    password = await ask('Password: ');
+  }
+
   if (!username || !password) {
-    console.log('Username and password required');
+    console.log('Credentials required');
     rl.close();
     return;
   }
 
   console.log();
-  console.log('Opening browser for login...');
-  console.log('(Complete 2FA if required)');
+  console.log('Opening browser...');
+  console.log('Complete 2FA if needed');
   console.log();
 
   try {
-    const cookies = await loginWithCredentials(username.trim(), password);
-    
+    const cookies = await loginWithCredentials(username, password);
     if (cookies) {
       saveCookies(cookies);
-      
-      console.log();
-      console.log('================================================');
-      console.log('  login SUCCESSFUL');
-      console.log('================================================');
-      console.log('You can now use: npm start <username>');
+      console.log('Login successful!');
     }
-
   } catch (err) {
-    console.log('Login failed:', err.message);
+    console.log('Error:', err.message);
   }
 
   rl.close();
 }
 
-// Run if called directly
 main().catch(err => {
   console.error('Error:', err);
   process.exit(1);
