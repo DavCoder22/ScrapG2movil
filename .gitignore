@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+output/*.json
+cookies/session_cookies.json
+debug_*.txt
+*.bat.orig
+.DS_Store

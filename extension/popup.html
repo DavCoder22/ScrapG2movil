@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial; padding: 20px; width: 300px; }
+    button { 
+      background: #007bff; color: white; border: none; 
+      padding: 10px 20px; cursor: pointer; width: 100%; 
+    }
+    button:hover { background: #0056b3; }
+    textarea { width: 100%; height: 150px; margin-top: 10px; }
+    .status { margin-top: 10px; color: green; }
+  </style>
+</head>
+<body>
+  <h3>Instagram Cookies</h3>
+  <button id="exportBtn">Exportar Cookies</button>
+  <textarea id="output" placeholder="Las cookies aparecerán aquí..."></textarea>
+  <div class="status" id="status"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

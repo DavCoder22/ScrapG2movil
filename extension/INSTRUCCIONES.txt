@@ -1,0 +1,55 @@
+# INSTALAR EXTENSION EN BRAVE
+
+## Opcion 1: Cargar extension sin empaquetar
+
+1. Escribe en la barra de direcciones de Brave:
+   ```
+   brave://extensions
+   ```
+
+2. Activa **"Modo de desarrollador"** (esquina superior derecha)
+
+3. Haz clic en **"Cargar descomprimida"**
+
+4. Selecciona la carpeta:
+   ```
+   instagram_scraper/extension
+   ```
+
+5. Listo! Veras la extension en la barra de extensiones
+
+---
+
+## Opcion 2: Usar extension existente
+
+**Cookie-Editor:**
+- Busca "Cookie-Editor" en Chrome Web Store
+- URL: https://chrome.google.com/webstore/detail/cookie-editor-alfg-nmheijbbnmjgmllcjkbldomlmmi
+
+**Pasos despues de instalar Cookie-Editor:**
+
+1. Abre Instagram (debes estar logueado)
+2. Haz clic en el icono de Cookie-Editor
+3. Busca: sessionid, ds_user_id, csrftoken
+4. Exporta como JSON
+
+---
+
+## USO DE LA EXTENSION CREADA:
+
+1. Abre Instagram en Brave
+2. Haz clic en el icono de la extension
+3. Boton "Exportar Cookies"
+4. Se copian al portapapeles
+5. Pega en `cookies/session_cookies.json`
+
+---
+
+## ARCHIVO CREADO EN:
+```
+instagram_scraper/extension/
+├── manifest.json
+├── popup.html
+├── popup.js
+└── background.js
+```
